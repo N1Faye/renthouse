@@ -1,12 +1,13 @@
 <template>
-<div>
-    123
-</div>
+  <div>
+    Layout
+    <router-view></router-view>
+  </div>
 </template>
 
 <script>
 export default {
-  created () {},
+  created () { },
   data () {
     return {}
   },
@@ -19,5 +20,4 @@ export default {
 </script>
 
 <style scoped lang='less'>
-
 </style>
