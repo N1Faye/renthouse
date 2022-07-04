@@ -1,17 +1,17 @@
 <template>
-  <div>
-    Layout
-    <router-view></router-view>
-  </div>
+  <div>hh</div>
 </template>
 
 <script>
 export default {
   created () { },
   data () {
-    return {}
+    return {
+    }
   },
-  methods: {},
+  methods: {
+
+  },
   computed: {},
   watch: {},
   filters: {},

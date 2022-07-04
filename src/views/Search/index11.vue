@@ -3,44 +3,43 @@
     <van-nav-bar title="标题" left-arrow @click-left="$router.go(-1)"
       ><template #title> <search-bar class="searchbar"></search-bar> </template
     ></van-nav-bar>
-    <div class="tabbar">
-      <van-row class="tab">
-        <van-col span="6" :class="{ active: tabid === 1 }" @click="swith(1)"
-          >区域<van-icon name="play" />
-        </van-col>
-        <van-col span="6" :class="{ active: tabid === 2 }" @click="swith(2)"
-          >方式<van-icon name="play" />
-        </van-col>
-        <van-col span="6" :class="{ active: tabid === 3 }" @click="swith(3)"
-          >租金<van-icon name="play"
-        /></van-col>
-        <van-col span="6" :class="{ active: tabid === 4 }" @click="swith(4)"
-          >筛选<van-icon name="play"
-        /></van-col>
-      </van-row>
-      <!-- 下弹出层 -->
-      <van-popup
-        class="down"
-        v-model="show"
-        v-if="show === true && tabid !== 4"
-      >
-        <down-popup
-          :tabid="tabid"
-          @swith="swith"
-          @cancel="onCancel"
-        ></down-popup>
-      </van-popup>
-      <!-- 右弹出层 -->
-      <van-popup
-        v-if="show === true && tabid === 4"
-        v-model="show"
-        position="right"
-        :style="{ height: '100%', width: '80%' }"
-      >
-        <right-popup v-model="show" @cancel="onCancel"></right-popup>
-      </van-popup>
-    </div>
-    <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
+    <!-- tab -->
+    <van-row class="tab" v-if="show === false || tabid === 4">
+      <van-col span="6" :class="{ active: tabid === 1 }" @click="swith(1)"
+        >区域<van-icon name="play" />
+      </van-col>
+      <van-col span="6" :class="{ active: tabid === 2 }" @click="swith(2)"
+        >方式<van-icon name="play" />
+      </van-col>
+      <van-col span="6" :class="{ active: tabid === 3 }" @click="swith(3)"
+        >租金<van-icon name="play"
+      /></van-col>
+      <van-col span="6" :class="{ active: tabid === 4 }" @click="swith(4)"
+        >筛选<van-icon name="play"
+      /></van-col>
+    </van-row>
+    <!-- 下弹出层 -->
+    <van-popup
+      v-model="show"
+      :style="{ height: '53%', width: '100%' }"
+      v-if="show === true && tabid !== 4"
+    >
+      <down-popup :tabid="tabid" @swith="swith" @cancel="onCancel"></down-popup>
+    </van-popup>
+    <!-- 右弹出层 -->
+    <van-popup
+      v-if="show === true && tabid === 4"
+      v-model="show"
+      position="right"
+      :style="{ height: '100%', width: '80%' }"
+    >
+      <right-popup v-model="show" @cancel="onCancel"></right-popup>
+    </van-popup>
+    <van-pull-refresh
+      v-model="isLoading"
+      @refresh="onRefresh"
+      class="housecard"
+    >
       <van-list
         v-model="loading"
         :finished="finished"
@@ -154,43 +153,45 @@ export default {
 }
 
 // tab
-.tabbar {
+.tab {
   position: sticky;
   top: 0;
-  z-index: 1000;
-  .tab {
-    background: white;
-    height: 40px;
-    line-height: 40px;
-    text-align: center;
-    font-size: 17px;
-    border-bottom: 1px solid #e4e6f0;
-    z-index: 1;
-    .van-icon {
-      &::before {
-        font-size: 12px;
-        padding-right: 5px;
-        padding-bottom: 3px;
-        color: #bbb;
-        transform: rotate(90deg);
-      }
+  background: white;
+  height: 40px;
+  line-height: 40px;
+  text-align: center;
+  font-size: 17px;
+  border-bottom: 1px solid #e4e6f0;
+  z-index: 1;
+  .van-icon {
+    &::before {
+      font-size: 12px;
+      padding-right: 5px;
+      padding-bottom: 3px;
+      color: #bbb;
+      transform: rotate(90deg);
     }
   }
-  .down {
-    position: absolute;
-    height: 353.15px;
-    max-height: none;
-    transform: translate3d(-50%, -50%, 0);
-    top: 0;
-    transform: none;
-    left: 0;
-  }
+}
+// 下弹出层
+/deep/.van-popup--center {
+  position: sticky;
+  top: 0;
+  overflow: hidden;
+  transform: none;
 }
 // 右弹出层
 /deep/.van-popup--right {
   top: 0;
   transform: none;
   padding: 14px 15px 64px 15px;
+}
+.housecard {
+  // margin-top: 90px;
+  // overflow: auto;
+  // height: calc(100vh - 140px);
+  // position: fixed;
+  top: 0;
 }
 // 点击切换
 .active {
