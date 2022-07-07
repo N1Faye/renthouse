@@ -9,7 +9,9 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    area: '北京',
+    area: '',
+    ipArea: '北京',
+    cityId: 'AREA|88cff55c-aaa4-e2e0',
     user: '',
     baseurl: 'http://liufusong.top:8080'
   },
@@ -21,6 +23,12 @@ export default new Vuex.Store({
     },
     setArea (state, payload) {
       state.area = payload
+    },
+    setCityId (state, payload) {
+      state.cityId = payload
+    },
+    setIpArea (state, payload) {
+      state.ipArea = payload
     }
   },
   actions: {

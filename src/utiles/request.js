@@ -2,7 +2,7 @@ import axios from 'axios'
 import store from '@/store'
 const instance = axios.create({
   baseURL: store.state.baseurl,
-  timeout: 5000
+  timeout: 30000
 })
 export default instance
 

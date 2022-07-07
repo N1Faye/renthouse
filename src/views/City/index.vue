@@ -4,28 +4,28 @@
     <van-index-bar :index-list="indexListAll" :sticky-offset-top="46">
       <van-index-anchor v-for="(val, key) in firstName" :key="key" :index="key"
         >{{ key === "热" ? "热门城市" : key }}
+        <!-- 当前城市 -->
         <van-cell
           v-if="key === '#'"
-          value="北京"
-          to="/home"
-          @click="fn($event)"
+          :value="$store.state.area ? $store.state.area : $store.state.ipArea"
+          @click="onClick"
         />
+        <!-- 热门城市 -->
         <van-cell
           v-else-if="key === '热'"
           v-for="(item, index) in hotCity"
           :key="index"
           :value="item.label"
           clickable
-          to="/home"
-          @click="fn($event)"
+          @click="onClick"
         />
+        <!-- 全部城市 -->
         <van-cell
           v-else
           v-for="(item, index) in val"
           :key="index"
           :value="item.label"
-          to="/home"
-          @click="fn($event)"
+          @click="onClick"
         />
       </van-index-anchor>
     </van-index-bar>
@@ -33,7 +33,7 @@
 </template>
 
 <script>
-import { getCityList, getHotCity } from '@/api/city'
+import { getCityList, getHotCity, getAreaInfo } from '@/api/area'
 export default {
   created () {
     this.getCityList()
@@ -52,14 +52,6 @@ export default {
 
   },
   methods: {
-    fn (event) {
-      const area = event.currentTarget.innerText
-      this.$store.commit('setArea', area)
-    },
-    // change (value) {
-    //   this.$store.commit('setArea', value)
-    //   console.log(value)
-    // },
     async getCityList () {
       try {
         const res = await getCityList()
@@ -88,6 +80,14 @@ export default {
       } catch (err) {
         console.log(err)
       }
+    },
+    async onClick (event) {
+      console.log(event.currentTarget.innerText)
+      this.$store.commit('setArea', event.target.innerText)
+      const res = await getAreaInfo(event.target.innerText)
+      console.log(res.data.body.value)
+      this.$store.commit('setCityId', res.data.body.value)
+      this.$router.back(-1)
     }
   },
   computed: {

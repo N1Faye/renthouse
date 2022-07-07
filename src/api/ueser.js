@@ -14,3 +14,13 @@ export const Login = ({ username, password }) => {
     }
   })
 }
+/**
+ *根据token获取用户信息
+ * @returns
+ */
+export const getUserInfo = () => {
+  return request({
+    url: 'user'
+
+  })
+}

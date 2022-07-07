@@ -18,26 +18,21 @@
           >筛选<van-icon name="play"
         /></van-col>
       </van-row>
-      <!-- 下弹出层 -->
+      <!-- 弹出层 -->
       <van-popup
-        class="down"
+        class="popup"
         v-model="show"
-        v-if="show === true && tabid !== 4"
+        :position="tabid === 4 ? 'right' : 'top'"
+        v-if="show === true"
       >
-        <down-popup
-          :tabid="tabid"
-          @swith="swith"
-          @cancel="onCancel"
-        ></down-popup>
-      </van-popup>
-      <!-- 右弹出层 -->
-      <van-popup
-        v-if="show === true && tabid === 4"
-        v-model="show"
-        position="right"
-        :style="{ height: '100%', width: '80%' }"
-      >
-        <right-popup v-model="show" @cancel="onCancel"></right-popup>
+        <keep-alive>
+          <pop-up
+            :tabid="tabid"
+            @swith="swith"
+            @cancel="onCancel"
+            @confirm="onConfirm"
+          ></pop-up>
+        </keep-alive>
       </van-popup>
     </div>
     <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
@@ -45,30 +40,36 @@
         v-model="loading"
         :finished="finished"
         finished-text="没有更多了"
+        :immediate-check="false"
         @load="onLoad"
       >
         <!-- 租房信息 -->
-        <house-card
-          v-for="(item, index) in housesList"
-          :key="index"
-          :houseitem="item"
-        ></house-card>
+        <template>
+          <IsLoading
+            v-if="housesList.length === 0 &&isLoading===false"
+          ></IsLoading>
+          <house-card
+            v-for="(item, index) in housesList"
+            :key="index"
+            :houseitem="item"
+            v-else
+          ></house-card>
+        </template>
       </van-list>
     </van-pull-refresh>
   </div>
 </template>
 
 <script>
-import { getHouses, getAreaInfo } from '@/api/search'
+import { getHouses } from '@/api/house'
 import SearchBar from '@/components/SearchBar.vue'
 import HouseCard from '@/components/HouseCard.vue'
-import RightPopup from './components/RightPopup.vue'
-import DownPopup from './components/DownPopup.vue'
+import PopUp from './components/PopUp.vue'
+
 export default {
   name: 'Search',
   created () {
     this.getHouses()
-    this.getAreaInfo()
   },
   data () {
     return {
@@ -79,42 +80,36 @@ export default {
       finished: false,
       isLoading: false,
       start: 1,
-      end: 20,
-      condition: { cityId: 'AREA|88cff55c-aaa4-e2e0', name: '北京' }
+      end: 20
 
     }
   },
   methods: {
     async getHouses () {
       try {
-        const res = await getHouses({ condition: this.condition, start: this.start, end: this.end }
-        )
+        const res = await getHouses({ condition: this.$store.state.cityId, start: this.start, end: this.end })
         if (res.data.body.list.length === 0) {
           this.finished = true
           return
         }
         this.housesList.push(...res.data.body.list)
-        console.log(this.housesList)
         this.loading = false
         this.isLoading = false
       } catch (err) {
         console.log(err)
       }
     },
-    async getAreaInfo () {
-      try {
-        const res = await getAreaInfo(this.condition.name)
-        console.log(res)
-      } catch (err) {
-        console.log(err)
-      }
-    },
+
     swith (num) {
       this.tabid = num
       this.show = true
     },
     onCancel () {
       this.show = false
+    },
+    onConfirm () {
+      this.show = false
+      // this.getHouses()
     },
     onLoad () {
       this.start += 20
@@ -125,6 +120,7 @@ export default {
       this.start = 1
       this.end = 20
       this.housesList = []
+      this.loading = true
       this.getHouses()
     }
   },
@@ -132,7 +128,7 @@ export default {
   },
   watch: {},
   filters: {},
-  components: { SearchBar, HouseCard, RightPopup, DownPopup }
+  components: { SearchBar, HouseCard, PopUp }
 }
 </script>
 
@@ -176,14 +172,19 @@ export default {
       }
     }
   }
-  .down {
+  // 下弹出层
+  .van-popup--top {
     position: absolute;
     height: 353.15px;
     max-height: none;
-    transform: translate3d(-50%, -50%, 0);
+    // transform: translate3d(-50%, -50%, 0);
     top: 0;
     transform: none;
     left: 0;
+  }
+  .van-popup--right {
+    width: 295px;
+    height: 1020px;
   }
 }
 // 右弹出层
@@ -192,6 +193,10 @@ export default {
   transform: none;
   padding: 14px 15px 64px 15px;
 }
+.isLoading {
+  position: fixed;
+}
+
 // 点击切换
 .active {
   color: #21b97a;

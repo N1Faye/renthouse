@@ -172,6 +172,7 @@
 </template>
 
 <script>
+import { submitHouse } from '@/api/rental'
 export default {
   created () { },
   data () {
@@ -209,11 +210,15 @@ export default {
         this.showOriented = false
       }
     },
-    computed: {},
-    watch: {},
-    filters: {},
-    components: {}
-  }
+    onSubmit () {
+      submitHouse()
+    }
+  },
+  computed: {},
+  watch: {},
+  filters: {},
+  components: {}
+
 }
 </script>
 
@@ -258,7 +263,7 @@ export default {
   }
 }
 
-// 按钮
+// 底部按钮
 .btn {
   display: flex;
   position: fixed;

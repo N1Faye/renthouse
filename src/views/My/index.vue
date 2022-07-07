@@ -56,7 +56,7 @@
 </template>
 
 <script>
-import { getUserInfo } from '@/api/my'
+import { getUserInfo } from '@/api/ueser'
 import { mapState } from 'vuex'
 export default {
   name: 'My',

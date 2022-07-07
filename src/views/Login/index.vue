@@ -30,7 +30,7 @@
 </template>
 
 <script>
-import { Login } from '@/api/login'
+import { Login } from '@/api/ueser'
 export default {
   name: 'Login',
   created () { },

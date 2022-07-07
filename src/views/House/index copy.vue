@@ -1,6 +1,13 @@
 <template>
   <!-- 加载中 -->
-  <is-loading v-if="!isLoading"></is-loading>
+  <van-loading
+    type="spinner"
+    color="#1cb676"
+    v-if="!isLoading"
+    size="50px"
+    vertical
+    >加载中...</van-loading
+  >
   <div class="main" v-else>
     <!-- navbar -->
     <van-nav-bar
@@ -98,31 +105,23 @@
       </div>
     </div>
     <!-- 猜你喜欢 -->
-    <div class="guess">
-      <h3>猜你喜欢</h3>
-      <div class="housecard">
-        <house-card
-          v-for="(item, index) in houseList"
-          :key="index"
-          :houseitem="item"
-        ></house-card>
-      </div>
-    </div>
+    <div class="guess"><h3>猜你喜欢</h3></div>
   </div>
 </template>
 
 <script>
 import { mapState } from 'vuex'
-import { getHouse, getHouses } from '@/api/house'
+import { getHouse } from '@/api/house'
 import { getIconPinyin } from '@/utiles/icon'
-import HouseCard from '@/components/HouseCard.vue'
 export default {
-  components: { HouseCard },
   name: 'House',
   props: {
     id: {
       type: [String, Number],
-      required: true
+      required: true,
+      latitude: '',
+      longitude: ''
+
     }
   },
   async created () {
@@ -131,37 +130,9 @@ export default {
       console.log(res)
       this.isLoading = true
       this.house = res.data.body
-      const that = this
-      const start = Math.floor(Math.random() * 25)
-      const end = start + 2
-      const res1 = await getHouses({ cityId: this.$store.state.cityId, start, end })
-      this.houseList = res1.data.body.list
-      this.$nextTick(() => {
-        const { BMapGL } = window
-        const map = new BMapGL.Map('container')
-        // 创建地图实例
-        const point = new BMapGL.Point(that.house.coord.longitude, that.house.coord.latitude)
-        console.log(that.house.coord.longitude)
-        // 创建点坐标
-        map.centerAndZoom(point, 15)
-        // 初始化地图，设置中心点坐标和地图级别
-        const marker = new BMapGL.Marker(point)
-        map.addOverlay(marker)
-        // 缩放控件
-        const zoomCtrl = new BMapGL.ZoomControl()
-        map.addControl(zoomCtrl)
-        // 创建信息窗口
-        const opts = {
-          width: 50,
-          height: 15,
-          title: this.house.title
-        }
-        const infoWindow = new BMapGL.InfoWindow(this.house.community, opts)
-        // 点标记添加点击事件
-        marker.addEventListener('click', function () {
-          map.openInfoWindow(infoWindow, point) // 开启信息窗口
-        })
-      })
+      this.latitude = this.house.coord.latitude
+      this.longitude = this.house.coord.longitude
+      this.getmap()
     } catch (err) {
       console.log(err)
     }
@@ -171,12 +142,37 @@ export default {
   data () {
     return {
       isLoading: false,
-      house: {},
-      houseList: []
+      house: {}
 
     }
   },
   methods: {
+    getmap () {
+      const { BMapGL } = window
+      const map = new BMapGL.Map('container')
+      // 创建地图实例
+      const point = new BMapGL.Point(this.house.coord.longitude, this.latitude = this.house.coord.latitude)
+      console.log(this.latitude)
+      // 创建点坐标
+      map.centerAndZoom(point, 15)
+      // 初始化地图，设置中心点坐标和地图级别
+      const marker = new BMapGL.Marker(point)
+      map.addOverlay(marker)
+      // 缩放控件
+      const zoomCtrl = new BMapGL.ZoomControl()
+      map.addControl(zoomCtrl)
+      // 创建信息窗口
+      const opts = {
+        width: 50,
+        height: 15,
+        title: this.house.title
+      }
+      const infoWindow = new BMapGL.InfoWindow(this.house.community, opts)
+      // 点标记添加点击事件
+      marker.addEventListener('click', function () {
+        map.openInfoWindow(infoWindow, point) // 开启信息窗口
+      })
+    }
   },
   computed: {
     ...mapState(['baseurl'])
@@ -191,6 +187,12 @@ export default {
 </script>
 
 <style scoped lang='less'>
+.van-loading {
+  position: fixed !important;
+  top: 50vh;
+  left: 50vw;
+  transform: translate(-50%, -50%);
+}
 .main {
   background-color: hsl(210, 25%, 97%);
 }
@@ -364,7 +366,6 @@ export default {
 .guess {
   margin: 10px 0 0;
   padding: 0 15px;
-  height: 450px;
   background: #fff;
 }
 h3 {

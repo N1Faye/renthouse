@@ -2,7 +2,9 @@
   <van-search v-model="value" show-action placeholder="请输入小区或地址">
     <template #label>
       <router-link to="/city">
-        <span>{{ $store.state.area }}<van-icon name="arrow-down" /> </span
+        <span
+          >{{ $store.state.area ? $store.state.area : $store.state.ipArea
+          }}<van-icon name="arrow-down" /> </span
       ></router-link>
     </template>
     <template #action>

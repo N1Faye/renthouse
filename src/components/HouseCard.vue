@@ -88,8 +88,9 @@ export default {
     }
     .tags {
       display: flex;
-      height: 22px;
+      flex-flow: wrap;
       .tag {
+        margin-bottom: 5px;
         display: inline-block;
         font-size: 12px;
         border-radius: 3px;
