@@ -2,14 +2,17 @@
   <div>
     <van-nav-bar title="地图找房" left-arrow @click-left="$router.go(-1)" />
     <!-- 地图 -->
-    <div id="container"></div>
+    <div id="container">
+    </div>
     <van-popup v-model="show" position="bottom" :style="{ height: '40%' }">
       <div class="title">
         <h3>房屋列表</h3>
         <router-link to="/search">更多房源</router-link>
       </div>
       <div class="housecard">
+        <IsLoading v-if="isLoading"></IsLoading>
         <house-card
+          v-else
           v-for="(item, index) in houseList"
           :key="index"
           :houseitem="item"
@@ -80,8 +83,8 @@ export default {
       cityMapInfo: [],
       areaMapInfo: [],
       show: false,
-      houseList: []
-
+      houseList: [],
+      isLoading: true
     }
   },
   methods: {
@@ -133,6 +136,7 @@ export default {
     async getHouses () {
       const res = await getHouses({ cityId: itemid })
       this.houseList = res.data.body.list
+      this.isLoading = false
     }
   },
   computed: {
@@ -148,6 +152,13 @@ export default {
 #container {
   width: 100vw;
   height: calc(100vh - 46px);
+}
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 120px;
+  width: 120px;
 }
 .title {
   position: fixed;
