@@ -35,3 +35,30 @@ export const getHouseCondition = (id) => {
     }
   })
 }
+
+/**
+ *发布房屋条件
+ * @param {*} id
+ * @returns
+ */
+export const getPublishCondition = () => {
+  return request({
+    url: '/houses/params'
+  })
+}
+
+/**
+ *图像图片上传
+ * @param {*} id
+ * @returns
+ */
+export const imgPubilsh = (formData) => {
+  return request({
+    method: 'POST',
+    url: '/houses/image',
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    },
+    data: formData
+  })
+}

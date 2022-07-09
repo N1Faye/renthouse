@@ -1,18 +1,16 @@
 <template>
   <div>
-    <van-nav-bar title="房屋管理" left-arrow @click-left="$router.go(-1)" />
+    <van-nav-bar title="收藏列表" left-arrow @click-left="$router.go(-1)" />
     <IsLoading v-if="isLoading"></IsLoading>
     <template v-else
       ><div class="prompt" v-if="pictureShow">
         <div class="picture">
           <img src="http://liufusong.top:8080/img/not-found.png" />
         </div>
-        <p>
-          您还没有房源， <router-link to="/rental">去发布房源</router-link>吧~
-        </p>
+        <p>您的收藏夹空空如也~</p>
       </div>
       <house-card
-        v-for="(item, index) in publishedList"
+        v-for="(item, index) in favoriteList"
         :key="index"
         :houseitem="item"
         v-else
@@ -22,33 +20,32 @@
 </template>
 
 <script>
-import { pubishedHouses } from '@/api/ueser'
+import { favoriteHouse } from '@/api/ueser'
 import HouseCard from '@/components/HouseCard.vue'
 export default {
   created () {
     console.log(1)
-    this.getPublishedList()
+    this.getfavoriteList()
     console.log(2)
   },
   data () {
     return {
       pictureShow: false,
       isLoading: true,
-      publishedList: []
+      favoriteList: []
     }
   },
   methods: {
-    async getPublishedList () {
+    async getfavoriteList () {
       try {
         console.log(3)
-        const res = await pubishedHouses()
+        const res = await favoriteHouse()
         this.isLoading = false
-        console.log(res)
-        if (!res.data.body) {
+        if (res.data.body.length === 0) {
           this.pictureShow = true
           return
         }
-        this.publishedList = res.data.body
+        this.favoriteList = res.data.body
       } catch (error) {
         console.log(error)
       }

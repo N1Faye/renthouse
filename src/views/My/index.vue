@@ -38,12 +38,12 @@
     </div>
     <!-- My icon -->
     <van-grid clickable :column-num="3" :border="false">
-      <van-grid-item icon="star-o" text="我的收藏" to="/" />
-      <van-grid-item icon="home-o" text="我的出租" to="/" />
-      <van-grid-item icon="clock-o" text="看房记录" to="/" />
-      <van-grid-item icon="credit-pay" text="成为房主" to="/" />
-      <van-grid-item icon="contact" text="个人资料" to="/" />
-      <van-grid-item icon="phone-circle-o" text="联系我们" to="/" />
+      <van-grid-item icon="star-o" text="我的收藏" to="/favorite" />
+      <van-grid-item icon="home-o" text="我的出租" to="/manage" />
+      <van-grid-item icon="clock-o" text="看房记录"  />
+      <van-grid-item icon="credit-pay" text="成为房主"  />
+      <van-grid-item icon="contact" text="个人资料"  />
+      <van-grid-item icon="phone-circle-o" text="联系我们"  />
     </van-grid>
     <!-- 底部banner -->
     <div class="foot">

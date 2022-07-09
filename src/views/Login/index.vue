@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- header -->
-    <van-nav-bar title="账号登录" left-arrow @click-left="$router.back()" />
+    <van-nav-bar title="账号登录" left-arrow @click-left="$router.push('/my')" />
     <!-- 登录表单 -->
     <van-form @submit="Login" class="login">
       <van-field

@@ -1,5 +1,5 @@
 <template>
-  <van-search v-model="value" show-action placeholder="请输入小区或地址">
+  <van-search v-model="value" show-action placeholder="请输入小区或地址" disabled>
     <template #label>
       <router-link to="/city">
         <span

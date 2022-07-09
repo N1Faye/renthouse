@@ -1,6 +1,8 @@
 <template>
   <div>
-    <router-view class="main"></router-view>
+    <keep-alive :include="['Search']">
+      <router-view class="main"></router-view>
+    </keep-alive>
     <van-tabbar route v-model="active">
       <van-tabbar-item replace to="/home" icon="wap-home-o">
         首页</van-tabbar-item

@@ -5,16 +5,28 @@
     ></van-nav-bar>
     <div class="tabbar">
       <van-row class="tab">
-        <van-col span="6" :class="{ active: tabid === 1 }" @click="swith(1)"
+        <van-col
+          span="6"
+          :class="{ active: tabid === 1 || activeds[0] }"
+          @click="swith(1)"
           >区域<van-icon name="play" />
         </van-col>
-        <van-col span="6" :class="{ active: tabid === 2 }" @click="swith(2)"
+        <van-col
+          span="6"
+          :class="{ active: tabid === 2 || activeds[1] }"
+          @click="swith(2)"
           >方式<van-icon name="play" />
         </van-col>
-        <van-col span="6" :class="{ active: tabid === 3 }" @click="swith(3)"
+        <van-col
+          span="6"
+          :class="{ active: tabid === 3 || activeds[2] }"
+          @click="swith(3)"
           >租金<van-icon name="play"
         /></van-col>
-        <van-col span="6" :class="{ active: tabid === 4 }" @click="swith(4)"
+        <van-col
+          span="6"
+          :class="{ active: tabid === 4 || activeds[3] }"
+          @click="swith(4)"
           >筛选<van-icon name="play"
         /></van-col>
       </van-row>
@@ -23,16 +35,14 @@
         class="popup"
         v-model="show"
         :position="tabid === 4 ? 'right' : 'top'"
-        v-if="show === true"
+        v-show="show === true"
       >
-        <keep-alive>
-          <pop-up
-            :tabid="tabid"
-            @swith="swith"
-            @cancel="onCancel"
-            @confirm="onConfirm"
-          ></pop-up>
-        </keep-alive>
+        <pop-up
+          :tabid="tabid"
+          @swith="swith"
+          @cancel="onCancel"
+          @confirm="onConfirm"
+        ></pop-up>
       </van-popup>
     </div>
     <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
@@ -46,8 +56,19 @@
         <!-- 租房信息 -->
         <template>
           <IsLoading
-            v-if="housesList.length === 0 &&isLoading===false"
+            v-if="
+              housesList.length === 0 &&
+              isLoading === false &&
+              finished === false &&
+              pictureShow === false
+            "
           ></IsLoading>
+          <div class="prompt" v-else-if="pictureShow && loading === false">
+            <div class="picture">
+              <img src="http://liufusong.top:8080/img/not-found.png" />
+            </div>
+            <p>暂无房源</p>
+          </div>
           <house-card
             v-for="(item, index) in housesList"
             :key="index"
@@ -65,11 +86,12 @@ import { getHouses } from '@/api/house'
 import SearchBar from '@/components/SearchBar.vue'
 import HouseCard from '@/components/HouseCard.vue'
 import PopUp from './components/PopUp.vue'
-
+// import { getItem } from '@/utiles/storage'
+// const MORE = 'MORE'
 export default {
   name: 'Search',
   created () {
-    this.getHouses()
+    this.getHouses(this.obj)
   },
   data () {
     return {
@@ -79,18 +101,28 @@ export default {
       loading: false,
       finished: false,
       isLoading: false,
-      start: 1,
-      end: 20
+      pictureShow: false,
+      obj: {
+        cityId: this.$store.state.cityId,
+        start: 1,
+        end: 20
+      },
+      activeds: []
 
     }
   },
   methods: {
     async getHouses () {
       try {
-        const res = await getHouses({ condition: this.$store.state.cityId, start: this.start, end: this.end })
+        const res = await getHouses(this.obj)
         if (res.data.body.list.length === 0) {
-          this.finished = true
-          return
+          if (this.housesList.length === 0) {
+            this.pictureShow = true
+            return
+          } else {
+            this.finished = true
+            return
+          }
         }
         this.housesList.push(...res.data.body.list)
         this.loading = false
@@ -107,21 +139,28 @@ export default {
     onCancel () {
       this.show = false
     },
-    onConfirm () {
+    onConfirm (e) {
+      this.activeds = Object.values(e).map(item => item ? (item !== 'null') : false)
+      this.pictureShow = false
+      this.housesList = []
       this.show = false
-      // this.getHouses()
+      this.obj = { ...this.obj, ...e }
+      this.getHouses()
     },
     onLoad () {
-      this.start += 20
-      this.end += 20
+      this.obj.start += 20
+      this.obj.end += 20
       this.getHouses()
     },
     onRefresh () {
-      this.start = 1
-      this.end = 20
+      this.obj.start = 1
+      this.obj.end = 20
       this.housesList = []
       this.loading = true
       this.getHouses()
+      if (this.housesList.length === 0) {
+        this.pictureShow = true
+      }
     }
   },
   computed: {
@@ -196,13 +235,29 @@ export default {
 .isLoading {
   position: fixed;
 }
+.prompt {
+  width: 150px;
+  margin: 0 auto;
+  .picture {
+    height: 158px;
+    text-align: center;
+    img {
+      width: 150px;
+      margin: 30px 0;
+    }
+  }
+  p {
+    text-align: center;
+    font-size: 14px;
+  }
+}
 
 // 点击切换
 .active {
   color: #21b97a;
   /deep/ .van-icon {
     &::before {
-      color: #21b97a !important;
+      color: rgb(33, 185, 122) !important;
     }
   }
 }

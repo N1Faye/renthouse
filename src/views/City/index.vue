@@ -1,39 +1,45 @@
 <template>
   <div class="main">
     <van-nav-bar title="城市列表" left-arrow @click-left="$router.go(-1)" />
-    <van-index-bar :index-list="indexListAll" :sticky-offset-top="46">
-      <van-index-anchor v-for="(val, key) in firstName" :key="key" :index="key"
-        >{{ key === "热" ? "热门城市" : key }}
-        <!-- 当前城市 -->
-        <van-cell
-          v-if="key === '#'"
-          :value="$store.state.area ? $store.state.area : $store.state.ipArea"
-          @click="onClick"
-        />
-        <!-- 热门城市 -->
-        <van-cell
-          v-else-if="key === '热'"
-          v-for="(item, index) in hotCity"
-          :key="index"
-          :value="item.label"
-          clickable
-          @click="onClick"
-        />
-        <!-- 全部城市 -->
-        <van-cell
-          v-else
-          v-for="(item, index) in val"
-          :key="index"
-          :value="item.label"
-          @click="onClick"
-        />
-      </van-index-anchor>
-    </van-index-bar>
+    <template>
+      <IsLoading v-if="isLoading"></IsLoading>
+      <van-index-bar :index-list="indexListAll" :sticky-offset-top="46" v-else>
+        <van-index-anchor
+          v-for="(val, key) in firstName"
+          :key="key"
+          :index="key"
+          >{{ key === "热" ? "热门城市" : key }}
+          <!-- 当前城市 -->
+          <van-cell
+            v-if="key === '#'"
+            :value="$store.state.area ? $store.state.area : $store.state.ipArea"
+            @click="onClick(item)"
+          />
+          <!-- 热门城市 -->
+          <van-cell
+            v-else-if="key === '热'"
+            v-for="(item, index) in hotCity"
+            :key="index"
+            :value="item.label"
+            clickable
+            @click="onClick(item)"
+          />
+          <!-- 全部城市 -->
+          <van-cell
+            v-else
+            v-for="(item, index) in val"
+            :key="index"
+            :value="item.label"
+            @click="onClick(item)"
+          />
+        </van-index-anchor>
+      </van-index-bar>
+    </template>
   </div>
 </template>
 
 <script>
-import { getCityList, getHotCity, getAreaInfo } from '@/api/area'
+import { getCityList, getHotCity } from '@/api/area'
 export default {
   created () {
     this.getCityList()
@@ -45,7 +51,8 @@ export default {
       allCityNameList: [],
       cityNameList: [],
       firstName: {},
-      hotCity: []
+      hotCity: [],
+      isLoading: true
     }
   },
   mounted () {
@@ -69,6 +76,7 @@ export default {
           })
         })
         this.firstName = firstName
+        this.isLoading = false
       } catch (err) {
         console.log(err)
       }
@@ -81,12 +89,9 @@ export default {
         console.log(err)
       }
     },
-    async onClick (event) {
-      console.log(event.currentTarget.innerText)
-      this.$store.commit('setArea', event.target.innerText)
-      const res = await getAreaInfo(event.target.innerText)
-      console.log(res.data.body.value)
-      this.$store.commit('setCityId', res.data.body.value)
+    async onClick (item) {
+      this.$store.commit('setArea', item.label)
+      this.$store.commit('setCityId', item.value)
       this.$router.back(-1)
     }
   },

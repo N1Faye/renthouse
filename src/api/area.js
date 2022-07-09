@@ -59,3 +59,18 @@ export const getArea = (id) => {
     }
   })
 }
+
+/**
+ *通过关键字搜寻小区
+ * @param {*} param0
+ * @returns
+ */
+export const findCommunity = ({ name, id }) => {
+  return request({
+    url: '/area/community',
+    params: {
+      name,
+      id
+    }
+  })
+}

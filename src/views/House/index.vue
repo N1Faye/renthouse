@@ -108,12 +108,28 @@
         ></house-card>
       </div>
     </div>
+    <div class="btn">
+      <template>
+        <van-button class="collect" @click="onClick">
+          <van-loading v-if="isLoading1" /><van-icon
+            :name="isFavorite ? 'star' : 'star-o'"
+            :class="{ favorite: isFavorite }"
+            @click="onClick"
+            v-else
+            >收藏</van-icon
+          ></van-button
+        >
+      </template>
+      <van-button class="consult">在线咨询</van-button>
+      <van-button class="call">电话预约</van-button>
+    </div>
   </div>
 </template>
 
 <script>
 import { mapState } from 'vuex'
 import { getHouse, getHouses } from '@/api/house'
+import { checkCollect, addCollect, delCollect } from '@/api/ueser'
 import { getIconPinyin } from '@/utiles/icon'
 import HouseCard from '@/components/HouseCard.vue'
 export default {
@@ -126,9 +142,9 @@ export default {
     }
   },
   async created () {
+    this.checkCollect()
     try {
       const res = await getHouse(this.id)
-      console.log(res)
       this.isLoading = true
       this.house = res.data.body
       const that = this
@@ -141,7 +157,6 @@ export default {
         const map = new BMapGL.Map('container')
         // 创建地图实例
         const point = new BMapGL.Point(that.house.coord.longitude, that.house.coord.latitude)
-        console.log(that.house.coord.longitude)
         // 创建点坐标
         map.centerAndZoom(point, 15)
         // 初始化地图，设置中心点坐标和地图级别
@@ -172,11 +187,41 @@ export default {
     return {
       isLoading: false,
       house: {},
-      houseList: []
+      houseList: [],
+      isFavorite: false,
+      isLoading1: false
 
     }
   },
   methods: {
+    async checkCollect () {
+      try {
+        const res = await checkCollect(this.$route.params.id)
+        this.isFavorite = res.data.body.isFavorite
+      } catch (err) {
+        console.log(err)
+      }
+    },
+    async onClick () {
+      this.isLoading1 = true
+      if (this.isFavorite) {
+        try {
+          await delCollect(this.$route.params.id)
+          this.isFavorite = false
+        } catch (err) {
+          console.log(err)
+        }
+      } else {
+        try {
+          const res = await addCollect(this.$route.params.id)
+          console.log(res)
+          this.isFavorite = true
+        } catch (err) {
+          console.log(err)
+        }
+      }
+      this.isLoading1 = false
+    }
   },
   computed: {
     ...mapState(['baseurl'])
@@ -193,6 +238,7 @@ export default {
 <style scoped lang='less'>
 .main {
   background-color: hsl(210, 25%, 97%);
+  min-height: 1705px;
 }
 // 轮播图
 .my-swipe {
@@ -273,7 +319,7 @@ export default {
 // 地址
 .address {
   width: 375px;
-  height: 189px;
+  height: 195px;
   margin-top: 10px;
   background-color: #fff;
   div {
@@ -300,6 +346,7 @@ export default {
   padding: 0 10px;
   background: #fff;
   font-size: 14px;
+  min-height: 60px;
   .van-grid {
     /deep/ .van-grid-item__content {
       padding: 0 !important;
@@ -316,6 +363,7 @@ export default {
   margin: 10px 0;
   padding: 0 10px;
   background: #fff;
+  min-height: 160px;
   .user {
     display: flex;
     height: 62px;
@@ -364,8 +412,9 @@ export default {
 .guess {
   margin: 10px 0 0;
   padding: 0 15px;
-  height: 450px;
+  min-height: 450px;
   background: #fff;
+  margin-bottom: 50px;
 }
 h3 {
   font-weight: 600;
@@ -373,5 +422,40 @@ h3 {
   margin-bottom: 10px;
   padding: 15px 0;
   border-bottom: 1px solid #cecece;
+}
+.btn {
+  overflow: hidden;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  height: 50px;
+  display: flex;
+  background-color: #fff;
+  z-index: 20;
+  .collect {
+    height: 50px;
+    width: 125px;
+    font-size: 17px;
+    color: #999;
+    border-bottom: none;
+  }
+  .consult {
+    width: 125px;
+    height: 50px;
+    font-size: 17px;
+    color: #999;
+    border-bottom: none;
+  }
+  .call {
+    height: 50px;
+    width: 125px;
+    color: white;
+    background-color: #21b97a;
+    font-size: 17px;
+    border-bottom: none;
+  }
+}
+.favorite {
+  color: #fa5741;
 }
 </style>

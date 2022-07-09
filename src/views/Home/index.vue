@@ -94,7 +94,6 @@ export default {
     async getAreaInfo () {
       try {
         const area = this.$store.state.area ? this.$store.state.area : this.$store.state.ipArea
-        console.log(area)
         const res = await getAreaInfo(area)
         this.$store.commit('setCityId', res.data.body.value)
       } catch (err) {

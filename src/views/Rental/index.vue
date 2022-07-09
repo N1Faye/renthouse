@@ -10,9 +10,10 @@
         is-link
         input-align="right"
         readonly
+        @click="showFind = true"
       />
       <van-field
-        v-model="price"
+        v-model.number="bodyObj.price"
         :label="'租' + '\xa0\xa0\xa0\xa0\xa0\xa0\xa0' + '金'"
         placeholder="请输入租金/月"
         type="Number"
@@ -20,7 +21,7 @@
         <template #extra>￥/月</template></van-field
       >
       <van-field
-        v-model="size"
+        v-model.number="bodyObj.size"
         label="建筑面积"
         placeholder="请输入建筑面积"
         type="Number"
@@ -41,7 +42,7 @@
       <van-popup v-model="showRoomType" position="bottom">
         <van-picker
           show-toolbar
-          :columns="roomTypeColumns"
+          :columns="columns.roomTypeColumns"
           @confirm="onConfirm"
           @cancel="showRoomType = false"
         />
@@ -61,7 +62,7 @@
       <van-popup v-model="showFloor" position="bottom">
         <van-picker
           show-toolbar
-          :columns="floorColumns"
+          :columns="columns.floorColumns"
           @confirm="onConfirm"
           @cancel="showFloor = false"
         />
@@ -81,7 +82,7 @@
       <van-popup v-model="showOriented" position="bottom">
         <van-picker
           show-toolbar
-          :columns="orientedColumns"
+          :columns="columns.orientedColumns"
           @confirm="onConfirm"
           @cancel="showOriented = false"
         />
@@ -90,10 +91,10 @@
       <div>
         <van-field label="房屋标题" readonly />
         <van-field
-          v-model="title"
+          v-model.trim="bodyObj.title"
           rows="2"
           type="textarea"
-          placeholder="请输入标题（例如：整租 小区名 2室 5000元）"
+          placeholder="请输入标题（例如：整租 小区名 2室 5000元)"
         />
       </div>
       <!-- 房屋图像 -->
@@ -109,45 +110,14 @@
       <div class="furniture">
         <van-field label="房屋配置" readonly />
         <ul class="support">
-          <li>
-            <iconpark-icon name="yigui"></iconpark-icon>
-            <p>衣柜</p>
-          </li>
-          <li>
-            <iconpark-icon name="xiyiji"></iconpark-icon>
-            <p>洗衣机</p>
-          </li>
-          <li>
-            <iconpark-icon name="kongtiao"></iconpark-icon>
-            <p>空调</p>
-          </li>
-          <li>
-            <iconpark-icon name="tianranqi"></iconpark-icon>
-            <p>天然气</p>
-          </li>
-          <li>
-            <iconpark-icon name="bingxiang"></iconpark-icon>
-            <p>冰箱</p>
-          </li>
-          <li>
-            <iconpark-icon name="nuanqi"></iconpark-icon>
-            <p>暖气</p>
-          </li>
-          <li>
-            <iconpark-icon name="dianshi"></iconpark-icon>
-            <p>电视</p>
-          </li>
-          <li>
-            <iconpark-icon name="reshuiqi"></iconpark-icon>
-            <p>热水器</p>
-          </li>
-          <li>
-            <iconpark-icon name="kuandai"></iconpark-icon>
-            <p>宽带</p>
-          </li>
-          <li>
-            <iconpark-icon name="shafa"></iconpark-icon>
-            <p>沙发</p>
+          <li
+            v-for="(val, key, i) in iconName"
+            :key="i"
+            @click="clickSupport(val)"
+            :class="{ active: supporting.includes(val) }"
+          >
+            <iconpark-icon :name="key"></iconpark-icon>
+            <p>{{ val }}</p>
           </li>
         </ul>
       </div>
@@ -155,69 +125,201 @@
       <div>
         <van-field label="房屋描述" readonly />
         <van-field
-          v-model="description"
+          v-model.trim="bodyObj.description"
           rows="5"
           autosize
           type="textarea"
           placeholder="请输入房屋描述信息"
         />
       </div>
-      <!-- 表单底部按钮 -->
-      <div class="btn">
-        <van-button class="cancel">取消</van-button>
-        <van-button class="submit" native-type="submit">提交</van-button>
-      </div>
     </van-form>
+    <!-- 表单底部按钮 -->
+    <div class="btn">
+      <van-button class="cancel" @click.stop="onCancel">取消</van-button>
+      <van-button class="submit" @click.stop="onSubmit">
+        <van-loading v-if="isLoading" /><span v-else>提交</span></van-button
+      >
+    </div>
+    <van-popup v-model="showFind" position="bottom" :style="{ height: '100%' }"
+      ><find-community
+        @cancel="showFind = false"
+        @pickup="onPickup"
+      ></find-community>
+    </van-popup>
   </div>
 </template>
 
 <script>
-import { submitHouse } from '@/api/rental'
+import { publishHouse } from '@/api/ueser'
+import { getPublishCondition, imgPubilsh } from '@/api/house'
+import FindCommunity from '@/components/FindCommunity.vue'
+let roomTypeArr = []
+let floorArr = []
+let orientedArr = []
 export default {
-  created () { },
+  async created () {
+    if (this.$store.state.user && this.$store.state.user.token) {
+      const res = await getPublishCondition()
+      roomTypeArr = res.data.body.roomType
+      this.getInfo(roomTypeArr, this.columns.roomTypeColumns)
+      floorArr = res.data.body.floor
+      this.getInfo(floorArr, this.columns.floorColumns)
+      orientedArr = res.data.body.oriented
+      this.getInfo(orientedArr, this.columns.orientedColumns)
+    } else {
+      this.$dialog.confirm({
+        message: '此页面需要登录才能访问，请先登录'
+      }).then(() => this.$router.push('/login')).catch(() => this.$router.go(-1))
+    }
+  },
   data () {
     return {
-      value: '',
       showPicker: false,
+      showFind: false,
       uploader: [],
-      community: '',
-      price: '',
-      size: '',
       showRoomType: false,
-      roomType: '',
-      roomTypeColumns: ['一室', '二室', '三室', '四室', '四室+'],
       showFloor: false,
-      floor: '',
-      floorColumns: ['高楼层', '中楼层', '低楼层'],
       showOriented: false,
+      isLoading: false,
+      columns: {
+        areaColumns: [],
+        rentTypeColumns: [],
+        priceColumns: [],
+        orientedColumns: [],
+        floorColumns: [],
+        roomTypeColumns: [],
+        tagsColumns: []
+      },
+      roomType: '',
+      floor: '',
       oriented: '',
-      orientedColumns: ['东', '西', '南', '北', '东南', '东北', '西南', '西北'],
-      title: '',
+      community: '',
       supporting: [],
-      description: ''
+      bodyObj: {
+        title: null,
+        description: null,
+        houseImg: null,
+        oriented: null,
+        supporting: null,
+        price: null,
+        roomType: null,
+        size: null,
+        floor: null,
+        community: null
+      },
+      iconName: {
+        yigui: '衣柜',
+        xiyiji: '洗衣机',
+        kongtiao: '空调',
+        tianranqi: '天然气',
+        bingxiang: '冰箱',
+        nuanqi: '暖气',
+        dianshi: '电视',
+        reshuiqi: '热水器',
+        kuandai: '宽带',
+        shafa: '沙发'
+      }
     }
   },
   methods: {
-    onConfirm (value) {
+    onConfirm (value, index) {
       if (this.showRoomType) {
         this.roomType = value
+        this.bodyObj.roomType = roomTypeArr[index].value
         this.showRoomType = false
       } else if (this.showFloor) {
         this.floor = value
+        this.bodyObj.floor = floorArr[index].value
         this.showFloor = false
       } else if (this.showOriented) {
         this.oriented = value
+        this.bodyObj.oriented = orientedArr[index].value
         this.showOriented = false
       }
     },
-    onSubmit () {
-      submitHouse()
+    getInfo (arr, newArr) {
+      arr.forEach(item => newArr.push(item.label))
+    },
+    onPickup (e) {
+      console.log(e)
+      this.community = e.communityName
+      this.showFind = false
+      this.bodyObj.community = e.community
+    },
+    clickSupport (val) {
+      if (this.supporting.includes(val)) {
+        this.supporting = this.supporting.filter((item) => {
+          return item !== val
+        })
+      } else {
+        this.supporting.push(val)
+      }
+      this.bodyObj.supporting = this.supporting.join('|')
+    },
+    async onSubmit () {
+      this.isLoading = true
+      if (this.uploader.length === 0) {
+        this.$toast.fail('请上传图片')
+        console.log('obj', this.bodyObj)
+        this.isLoading = false
+        return
+      }
+      const formData = new FormData()
+      this.uploader.forEach(item => formData.append('file', item.file))
+      console.log(this.uploader[0].file)
+      const res1 = await imgPubilsh(formData)
+      console.log('img', res1.data.body)
+      this.bodyObj.houseImg = res1.data.body.join('|')
+      console.log('img1', this.bodyObj.houseImg)
+      console.log('1', this.bodyObj)
+      if (!Object.values(this.bodyObj).every(item => Boolean(item))) {
+        this.$toast.fail('请输入完整信息')
+        console.log('obj', this.bodyObj)
+        this.isLoading = false
+        return
+      }
+      try {
+        const res = await publishHouse(this.bodyObj)
+        const that = this
+        if (res.data.status === 200) {
+          this.$dialog.confirm({
+            message: '发布成功,是否查看发布房源'
+          }).then(() => { that.$router.push('/manage') }).catch(() => {
+            that.bodyObj = {
+              title: null,
+              description: null,
+              houseImg: null,
+              oriented: null,
+              supporting: null,
+              price: null,
+              roomType: null,
+              size: null,
+              floor: null,
+              community: null
+            }
+            this.community = this.roomType = this.floor = this.oriented = null
+            this.supporting = this.uploader = []
+          })
+        } else {
+          this.$toast.fail('发布失败，请重试')
+        }
+        this.isLoading = false
+      } catch (err) {
+        console.log(err)
+      }
+      this.isLoading = false
+    },
+    async onCancel () {
+      await this.$dialog.confirm({
+        message: '放弃发布房源'
+      })
+      this.$router.go(-1)
     }
   },
   computed: {},
   watch: {},
   filters: {},
-  components: {}
+  components: { FindCommunity }
 
 }
 </script>
@@ -297,5 +399,8 @@ export default {
       font-size: 17px;
     }
   }
+}
+.active {
+  color: #21b97a;
 }
 </style>
