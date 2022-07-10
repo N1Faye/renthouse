@@ -266,12 +266,8 @@ export default {
       }
       const formData = new FormData()
       this.uploader.forEach(item => formData.append('file', item.file))
-      console.log(this.uploader[0].file)
       const res1 = await imgPubilsh(formData)
-      console.log('img', res1.data.body)
       this.bodyObj.houseImg = res1.data.body.join('|')
-      console.log('img1', this.bodyObj.houseImg)
-      console.log('1', this.bodyObj)
       if (!Object.values(this.bodyObj).every(item => Boolean(item))) {
         this.$toast.fail('请输入完整信息')
         console.log('obj', this.bodyObj)

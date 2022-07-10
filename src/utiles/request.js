@@ -30,7 +30,7 @@ instance.interceptors.response.use(function (response) {
     store.commit('setUser', '')
     Dialog.confirm({
       message: '您的登录已过期，请重新登录'
-    }).then(() => router.push('/login'))
+    }).then(() => router.push('/login')).catch(() => router.go(-1))
   }
   return response
 }, function (error) {

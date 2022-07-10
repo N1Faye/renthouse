@@ -26,9 +26,7 @@ import { pubishedHouses } from '@/api/ueser'
 import HouseCard from '@/components/HouseCard.vue'
 export default {
   created () {
-    console.log(1)
     this.getPublishedList()
-    console.log(2)
   },
   data () {
     return {
@@ -40,11 +38,10 @@ export default {
   methods: {
     async getPublishedList () {
       try {
-        console.log(3)
         const res = await pubishedHouses()
         this.isLoading = false
         console.log(res)
-        if (!res.data.body) {
+        if (res.data.body.length === 0) {
           this.pictureShow = true
           return
         }
