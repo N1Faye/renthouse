@@ -45,7 +45,6 @@ export default {
     async Login (values) {
       try {
         const res = await Login(values)
-        console.log(res)
         if (res.data.status === 200) {
           this.$store.commit('setUser', res.data.body)
           this.$toast.success('登录成功')

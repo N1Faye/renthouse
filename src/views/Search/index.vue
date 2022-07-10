@@ -86,8 +86,6 @@ import { getHouses } from '@/api/house'
 import SearchBar from '@/components/SearchBar.vue'
 import HouseCard from '@/components/HouseCard.vue'
 import PopUp from './components/PopUp.vue'
-// import { getItem } from '@/utiles/storage'
-// const MORE = 'MORE'
 export default {
   name: 'Search',
   created () {

@@ -98,6 +98,7 @@
         <van-picker
           v-show="tabid === 1 && isLoading === false"
           :columns="columns.areaColumns"
+          value-key="label"
           show-toolbar
           toolbar-position="bottom"
           @confirm="onConfirm"
@@ -177,28 +178,10 @@ export default {
       try {
         const res = await getHouseCondition(this.$store.state.cityId)
         areaArr = res.data.body.area
-        // 地区信息加载
-        const areaChildren = []
-        areaArr.children.forEach((item1, index1) => {
-          areaChildren[index1] = { text: item1.label, children: [{ text: '' }] }
-          if (item1.children !== undefined) {
-            item1.children.forEach((item, index) => {
-              areaChildren[index1].children[index] = { text: item.label }
-            })
-          }
-        })
-        // 地铁加载
-        const subwayChildren = []
         subwayArr = res.data.body.subway
-        subwayArr.children.forEach((item1, index1) => {
-          subwayChildren[index1] = { text: item1.label, children: [{ text: '' }] }
-          if (item1.children !== undefined) {
-            item1.children.forEach((item, index) => {
-              subwayChildren[index1].children[index] = { text: item.label }
-            })
-          }
-        })
-        this.columns.areaColumns = [{ text: '区域', children: areaChildren }, { text: '地铁', children: subwayChildren }]
+        areaArr.children[0].children = [{ label: '' }]
+        subwayArr.children[0].children = [{ label: '' }]
+        this.columns.areaColumns = [areaArr, subwayArr]
         rentTypeArr = res.data.body.rentType
         this.getInfo(rentTypeArr, this.columns.rentTypeColumns)
         priceArr = res.data.body.price
